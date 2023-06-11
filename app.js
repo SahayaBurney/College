@@ -3,6 +3,9 @@ const bdy=require('body-parser')
 const dbo=require('./mongo')
 //
 const multer=require('multer')
+// const { google } = require('googleapis');
+// const { OAuth2 } = google.auth;
+const nodemailer = require('nodemailer');
 const upload = multer({ dest: 'uploads/' })
 const ejs = require('ejs');
 const path=require('path')
@@ -80,7 +83,6 @@ app.post("/ssendmess",async function(req,res){
     let emps=await cursors.toArray()
     console.log("Hello");
     console.log(emps);
-    //
     console.log(emps.date);
     res.render('Dmess',{emp:emps })
 })
@@ -106,7 +108,37 @@ app.get("/adminlogin",function(req,res){
 app.get("/admin",function(req,res){
     res.render("admin")
 })
+app.get("/mail",function(req,res){
+    res.render("mail")
+})
+app.post("/mail",function(req,res){
+    var email=req.body.email
+    //
+    const oauth2Client = new OAuth2(
+        'YOUR_CLIENT_ID',
+        'YOUR_CLIENT_SECRET',
+        'YOUR_REDIRECT_URI'
+      );
+      
+      oauth2Client.setCredentials({
+        refresh_token: 'YOUR_REFRESH_TOKEN'
+      });
+      
+      const accessToken = oauth2Client.getAccessToken();
+      
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          type: 'OAuth2',
+          user: 'YOUR_EMAIL_ADDRESS',
+          accessToken,
+          clientId: 'YOUR_CLIENT_ID',
+          clientSecret: 'YOUR_CLIENT_SECRET',
+          refreshToken: 'YOUR_REFRESH_TOKEN',
+        },
+      });
 
+})
 app.post("/adminlogin",async function(req,res){
 let database=await dbo.getdata()
     const collection=database.collection('admin')
@@ -228,7 +260,6 @@ app.get("/dimark",async function(req,res){
 })
 inme="",isec="",idept=""
 app.post("/imark",async function(req,res){
-    //
     let database=await dbo.getdata()
     const collection=database.collection('users')
     inme=req.body.year,isec=req.body.section,idept=req.body.dept
@@ -240,7 +271,6 @@ app.get("/marking",function(req,res){
     res.render("marking")
 })
     app.get("/download",async function(req,res){
-        //
         let database = await dbo.getdata();
         const collection = database.collection('users');
         const cursor = collection.find({ yjoin: inme, sec: isec, dept: idept, type: "student" });
